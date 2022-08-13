@@ -9,7 +9,7 @@ interface IFxStateSender {
     function sendMessageToChild(address _receiver, bytes calldata _data) external;
 }
 
-/** 
+/**
  * @title FxRoot root contract for fx-portal
  */
 contract FxRoot is IFxStateSender {
