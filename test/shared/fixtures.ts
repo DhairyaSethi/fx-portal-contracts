@@ -24,6 +24,10 @@ import { FxMintableERC721ChildTunnel } from '../../types/FxMintableERC721ChildTu
 import { FxMintableERC721ChildTunnel__factory } from '../../types/factories/FxMintableERC721ChildTunnel__factory';
 import { FxMintableERC721RootTunnel } from '../../types/FxMintableERC721RootTunnel';
 import { FxMintableERC721RootTunnel__factory } from '../../types/factories/FxMintableERC721RootTunnel__factory';
+import { FxMintableERC1155RootTunnel } from '../../types/FxMintableERC1155RootTunnel';
+import { FxMintableERC1155RootTunnel__factory } from '../../types/factories/FxMintableERC1155RootTunnel__factory';
+import { FxMintableERC1155ChildTunnel } from '../../types/FxMintableERC1155ChildTunnel';
+import { FxMintableERC1155ChildTunnel__factory } from '../../types/factories/FxMintableERC1155ChildTunnel__factory'
 
 import { FxRoot } from '../../types/FxRoot';
 import { FxRoot__factory } from '../../types/factories/FxRoot__factory';
@@ -48,11 +52,13 @@ export interface ChildFixture {
   erc721Token: FxERC721;
   mintableERC20Token: FxERC20;
   mintableERC721Token?: FxERC721;
+  mintableERC1155Token?: FxERC1155;
   erc721: FxERC721ChildTunnel;
   erc1155Token: FxERC1155;
   erc1155: FxERC1155ChildTunnel;
   mintableErc20: FxMintableERC20ChildTunnel;
   mintableErc721?: FxMintableERC721ChildTunnel;
+  mintableErc1155?: FxMintableERC1155ChildTunnel;
   stateReceiver: StateReceiver;
 }
 
@@ -63,6 +69,7 @@ export interface RootFixture {
   erc1155: FxERC1155RootTunnel;
   mintableErc20: FxMintableERC20RootTunnel;
   mintableErc721?: FxMintableERC721RootTunnel;
+  mintableErc1155?: FxMintableERC1155RootTunnel;
   stateSender: StateSender;
 }
 
@@ -97,6 +104,10 @@ export async function childFixture([wallet]: Signer[]): Promise<ChildFixture> {
   const mintableErc721 = await new FxMintableERC721ChildTunnel__factory(wallet).deploy(fxChild.address, mintableERC721Token.address, mintableERC721Token.address, overrides);
   await mintableERC721Token.initialize(await wallet.getAddress(), mintableErc721.address, "FxMintableERC721", "FM3");
 
+  const mintableERC1155Token = await new FxERC1155__factory(wallet).deploy(overrides);
+  const mintableErc1155 = await new FxMintableERC1155ChildTunnel__factory(wallet).deploy(fxChild.address, mintableERC1155Token.address, mintableERC1155Token.address, overrides);
+  await mintableERC1155Token.initialize(await wallet.getAddress(), mintableErc1155.address, "https://");
+
   return { 
     fxChild,
     erc20Token,
@@ -109,6 +120,8 @@ export async function childFixture([wallet]: Signer[]): Promise<ChildFixture> {
     mintableErc20,
     mintableErc721,
     mintableERC721Token,
+    mintableErc1155,
+    mintableERC1155Token,
     stateReceiver
   };
 }
@@ -128,6 +141,9 @@ export async function rootFixture([wallet]: Signer[], cFixture: ChildFixture, ):
     mintableErc20: fxMintableERC20ChildTunnel,
     mintableERC721Token: fxMintableERC721,
     mintableErc721: fxMintableERC721ChildTunnel,
+    mintableERC1155Token: fxMintableERC1155,
+    mintableErc1155: fxMintableERC1155ChildTunnel,
+
     stateReceiver
   } = cFixture;
 
@@ -171,6 +187,13 @@ export async function rootFixture([wallet]: Signer[], cFixture: ChildFixture, ):
 
   const setMintableERC721Root = await fxMintableERC721ChildTunnel.setFxRootTunnel(mintableErc721.address);
   await setMintableERC721Root.wait();
+
+  const mintableErc1155 = await new FxMintableERC1155RootTunnel__factory(wallet).deploy(checkpointManager, fxRoot.address, fxMintableERC1155.address, overrides);
+  const setMintableERC1155Child = await mintableErc1155.setFxChildTunnel(fxMintableERC1155ChildTunnel.address);
+  await setMintableERC1155Child.wait();
+
+  const setMintableERC1155Root = await fxMintableERC1155ChildTunnel.setFxRootTunnel(mintableErc1155.address);
+  await setMintableERC1155Root.wait();
   
   return {
     fxRoot, 
@@ -179,6 +202,7 @@ export async function rootFixture([wallet]: Signer[], cFixture: ChildFixture, ):
     erc1155,
     mintableErc20,
     mintableErc721,
+    mintableErc1155,
     stateSender
   };
 }
