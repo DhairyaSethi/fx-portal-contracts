@@ -68,6 +68,41 @@ export function getCreate2Address(
   return getAddress(`0x${keccak256(sanitizedInputs).slice(-40)}`);
 }
 
+export function getCreate2AddressFromSalt(
+  factoryAddress: string,
+  salt: string,
+  bytecode: string,
+): string {
+  const create2Inputs = [
+    '0xff',
+    factoryAddress,
+    salt,
+    keccak256(bytecode),
+  ];
+  const sanitizedInputs = `0x${create2Inputs.map(i => i.slice(2)).join('')}`;
+  return getAddress(`0x${keccak256(sanitizedInputs).slice(-40)}`);
+}
+
+export const buildBytecode = (
+  constructorTypes: any[],
+  constructorArgs: any[],
+  contractBytecode: string,
+) =>
+  `${contractBytecode}${encodeParams(constructorTypes, constructorArgs).slice(
+    2,
+  )}`
+
+export const encodeParams = (dataTypes: any[], data: any[]) => {
+  const abiCoder = ethers.utils.defaultAbiCoder
+  return abiCoder.encode(dataTypes, data)
+}
+
+export const minimalProxyCreationCode = (logic: string) =>
+  solidityPack(
+    ['bytes10', 'bytes10', 'bytes20', 'bytes15'],
+    ['0x3d602d80600a3d3981f3', '0x363d3d373d3d3d363d73', logic, '0x5af43d82803e903d91602b57fd5bf3']
+  )
+
 export async function getApprovalDigest(
   token: Contract,
   approve: {

@@ -20,6 +20,10 @@ import { FxMintableERC20ChildTunnel } from '../../types/FxMintableERC20ChildTunn
 import { FxMintableERC20ChildTunnel__factory } from '../../types/factories/FxMintableERC20ChildTunnel__factory';
 import { FxMintableERC20RootTunnel } from '../../types/FxMintableERC20RootTunnel';
 import { FxMintableERC20RootTunnel__factory } from '../../types/factories/FxMintableERC20RootTunnel__factory';
+import { FxMintableERC721ChildTunnel } from '../../types/FxMintableERC721ChildTunnel';
+import { FxMintableERC721ChildTunnel__factory } from '../../types/factories/FxMintableERC721ChildTunnel__factory';
+import { FxMintableERC721RootTunnel } from '../../types/FxMintableERC721RootTunnel';
+import { FxMintableERC721RootTunnel__factory } from '../../types/factories/FxMintableERC721RootTunnel__factory';
 
 import { FxRoot } from '../../types/FxRoot';
 import { FxRoot__factory } from '../../types/factories/FxRoot__factory';
@@ -37,25 +41,28 @@ import { StateReceiver__factory } from '../../types/factories/StateReceiver__fac
 
 const TOTAL_SUPPLY = expandTo18Decimals(10000);
 
-interface ChildFixture {
+export interface ChildFixture {
   fxChild: FxChildTest;
   erc20Token: FxERC20;
   erc20: FxERC20ChildTunnel;
   erc721Token: FxERC721;
   mintableERC20Token: FxERC20;
+  mintableERC721Token?: FxERC721;
   erc721: FxERC721ChildTunnel;
   erc1155Token: FxERC1155;
   erc1155: FxERC1155ChildTunnel;
   mintableErc20: FxMintableERC20ChildTunnel;
+  mintableErc721?: FxMintableERC721ChildTunnel;
   stateReceiver: StateReceiver;
 }
 
-interface RootFixture {
+export interface RootFixture {
   fxRoot: FxRoot;
   erc20: FxERC20RootTunnel;
   erc721: FxERC721RootTunnel;
   erc1155: FxERC1155RootTunnel;
   mintableErc20: FxMintableERC20RootTunnel;
+  mintableErc721?: FxMintableERC721RootTunnel;
   stateSender: StateSender;
 }
 
@@ -86,6 +93,10 @@ export async function childFixture([wallet]: Signer[]): Promise<ChildFixture> {
   const mintableErc20 = await new FxMintableERC20ChildTunnel__factory(wallet).deploy(fxChild.address, mintableERC20Token.address, mintableERC20Token.address, overrides);
   await mintableERC20Token.initialize(await wallet.getAddress(), mintableErc20.address, "FxMintableERC20", "FM2", 18);
 
+  const mintableERC721Token = await new FxERC721__factory(wallet).deploy(overrides);
+  const mintableErc721 = await new FxMintableERC721ChildTunnel__factory(wallet).deploy(fxChild.address, mintableERC721Token.address, mintableERC721Token.address, overrides);
+  await mintableERC721Token.initialize(await wallet.getAddress(), mintableErc721.address, "FxMintableERC721", "FM3");
+
   return { 
     fxChild,
     erc20Token,
@@ -96,6 +107,8 @@ export async function childFixture([wallet]: Signer[]): Promise<ChildFixture> {
     erc1155,
     mintableERC20Token,
     mintableErc20,
+    mintableErc721,
+    mintableERC721Token,
     stateReceiver
   };
 }
@@ -113,6 +126,8 @@ export async function rootFixture([wallet]: Signer[], cFixture: ChildFixture, ):
     erc1155: fxERC1155ChildTunnel,
     mintableERC20Token: fxMintableERC20,
     mintableErc20: fxMintableERC20ChildTunnel,
+    mintableERC721Token: fxMintableERC721,
+    mintableErc721: fxMintableERC721ChildTunnel,
     stateReceiver
   } = cFixture;
 
@@ -149,6 +164,13 @@ export async function rootFixture([wallet]: Signer[], cFixture: ChildFixture, ):
 
   const setMintableERC20Root = await fxMintableERC20ChildTunnel.setFxRootTunnel(mintableErc20.address);
   await setMintableERC20Root.wait();
+
+  const mintableErc721 = await new FxMintableERC721RootTunnel__factory(wallet).deploy(checkpointManager, fxRoot.address, fxMintableERC721.address, overrides);
+  const setMintableERC721Child = await mintableErc721.setFxChildTunnel(fxMintableERC721ChildTunnel.address);
+  await setMintableERC721Child.wait();
+
+  const setMintableERC721Root = await fxMintableERC721ChildTunnel.setFxRootTunnel(mintableErc721.address);
+  await setMintableERC721Root.wait();
   
   return {
     fxRoot, 
@@ -156,6 +178,7 @@ export async function rootFixture([wallet]: Signer[], cFixture: ChildFixture, ):
     erc721,
     erc1155,
     mintableErc20,
+    mintableErc721,
     stateSender
   };
 }
