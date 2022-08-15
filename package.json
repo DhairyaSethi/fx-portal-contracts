@@ -31,7 +31,16 @@
     "dotenv": "^8.2.0",
     "ethereum-waffle": "^3.2.1",
     "ethers": "^5.0.24",
-    "hardhat": "^2.0.7"
+    "hardhat": "^2.0.7",
+    "hardhat-contract-sizer": "^2.0.3",
+    "hardhat-deploy": "^0.8.11",
+    "hardhat-gas-reporter": "^1.0.4",
+    "solidity-coverage": "^0.7.16",
+    "ts-node": "^10.3.0",
+    "typechain": "^5.1.2",
+    "typescript": "^4.4.4",
+    "prettier": "2.4.1",
+    "prettier-plugin-solidity": "^1.0.0-beta.18"
   },
   "dependencies": {
     "@ethereumjs/block": "^3.6.1",

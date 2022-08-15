@@ -2,6 +2,7 @@ import { ethers } from 'hardhat';
 import axios, { AxiosResponse } from 'axios';
 import { ProofUtil }  from './proof_util';
 import { ITransactionReceipt } from './interface';
+// @ts-ignore
 import ethUtils from "ethereumjs-util";
 
 function getLogIndex_(logEventSig: string, receipt: any) {
