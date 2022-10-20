@@ -168,7 +168,7 @@ library RLPReader {
         return result;
     }
 
-    // any non-zero byte is considered true
+    // any non-zero byte < 128 is considered true
     function toBoolean(RLPItem memory item) internal pure returns (bool) {
         require(item.len == 1);
         uint256 result;
@@ -198,7 +198,7 @@ library RLPReader {
         assembly {
             result := mload(memPtr)
 
-            // shfit to the correct location if neccesary
+            // shift to the correct location if neccesary
             if lt(len, 32) {
                 result := div(result, exp(256, sub(32, len)))
             }

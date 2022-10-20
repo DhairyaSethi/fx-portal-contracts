@@ -133,7 +133,7 @@ abstract contract FxBaseRootTunnel {
         bytes32 receiptRoot,
         uint256 headerNumber,
         bytes memory blockProof
-    ) private view returns (uint256) {
+    ) private view {
         (bytes32 headerRoot, uint256 startBlock, , uint256 createdAt, ) = checkpointManager.headerBlocks(headerNumber);
 
         require(
@@ -144,7 +144,6 @@ abstract contract FxBaseRootTunnel {
             ),
             "FxRootTunnel: INVALID_HEADER"
         );
-        return createdAt;
     }
 
     /**
@@ -171,7 +170,7 @@ abstract contract FxBaseRootTunnel {
     /**
      * @notice Process message received from Child Tunnel
      * @dev function needs to be implemented to handle message as per requirement
-     * This is called by onStateReceive function.
+     * This is called by receiveMessage function.
      * Since it is called via a system call, any event will not be emitted during its execution.
      * @param message bytes message that was sent from Child Tunnel
      */

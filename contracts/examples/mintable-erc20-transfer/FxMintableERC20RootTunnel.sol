@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import {Create2} from "../../lib/Create2.sol";
-import {SafeMath} from "../../lib/SafeMath.sol";
 import {FxERC20} from "../../tokens/FxERC20.sol";
 import {FxBaseRootTunnel} from "../../tunnel/FxBaseRootTunnel.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -11,7 +10,6 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
  * @title FxMintableERC20RootTunnel
  */
 contract FxMintableERC20RootTunnel is FxBaseRootTunnel, Create2 {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     // maybe DEPOSIT and MAP_TOKEN can be reduced to bytes4
@@ -20,7 +18,19 @@ contract FxMintableERC20RootTunnel is FxBaseRootTunnel, Create2 {
 
     mapping(address => address) public rootToChildTokens;
     address public rootTokenTemplate;
-    bytes32 public childTokenTemplateCodeHash;
+
+    event FxWithdrawMintableERC20(
+        address indexed rootToken,
+        address indexed childToken,
+        address indexed userAddress,
+        uint256 amount
+    );
+    event FxDepositMintableERC20(
+        address indexed rootToken,
+        address indexed depositor,
+        address indexed userAddress,
+        uint256 amount
+    );
 
     constructor(
         address _checkpointManager,
@@ -49,6 +59,8 @@ contract FxMintableERC20RootTunnel is FxBaseRootTunnel, Create2 {
         // DEPOSIT, encode(rootToken, depositor, user, amount, extra data)
         bytes memory message = abi.encode(DEPOSIT, abi.encode(rootToken, msg.sender, user, amount, data));
         _sendMessageToChild(message);
+
+        emit FxDepositMintableERC20(rootToken, msg.sender, user, amount);
     }
 
     // exit processor
@@ -74,7 +86,7 @@ contract FxMintableERC20RootTunnel is FxBaseRootTunnel, Create2 {
         FxERC20 tokenObj = FxERC20(rootToken);
         uint256 balanceOf = tokenObj.balanceOf(address(this));
         if (balanceOf < amount) {
-            tokenObj.mint(address(this), amount.sub(balanceOf));
+            tokenObj.mint(address(this), amount - balanceOf);
         }
 
         //approve token transfer
@@ -82,6 +94,8 @@ contract FxMintableERC20RootTunnel is FxBaseRootTunnel, Create2 {
 
         // transfer from tokens
         IERC20(rootToken).safeTransferFrom(address(this), to, amount);
+
+        emit FxWithdrawMintableERC20(rootToken, childToken, to, amount);
     }
 
     function _deployRootToken(
@@ -93,7 +107,7 @@ contract FxMintableERC20RootTunnel is FxBaseRootTunnel, Create2 {
         // deploy new root token
         bytes32 salt = keccak256(abi.encodePacked(childToken));
         address rootToken = createClone(salt, rootTokenTemplate);
-        FxERC20(rootToken).initialize(address(this), rootToken, name, symbol, decimals);
+        FxERC20(rootToken).initialize(address(this), childToken, name, symbol, decimals);
 
         // add into mapped tokens
         rootToChildTokens[rootToken] = childToken;

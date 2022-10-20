@@ -45,6 +45,8 @@ library ExitPayloadReader {
             dest += WORD_SIZE;
         }
 
+        if (len == 0) return;
+
         // left over bytes. Mask is used to remove unwanted bytes from the word
         uint256 mask = 256**(WORD_SIZE - len) - 1;
         assembly {
@@ -92,7 +94,7 @@ library ExitPayloadReader {
             // legacy tx
             receipt.data = receiptItem.toList();
         } else {
-            // pop first byte before parsting receipt
+            // pop first byte before parsing receipt
             bytes memory typedBytes = receipt.raw;
             bytes memory result = new bytes(typedBytes.length - 1);
             uint256 srcPtr;
