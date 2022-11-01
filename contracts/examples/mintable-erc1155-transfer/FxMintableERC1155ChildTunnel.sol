@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {FxERC1155} from "../../tokens/FxERC1155.sol";
 import {ERC1155Holder} from "../../lib/ERC1155Holder.sol";
-import {Create2} from "../..//lib/Create2.sol";
+import {Create2} from "../../lib/Create2.sol";
 import {FxBaseChildTunnel} from "../../tunnel/FxBaseChildTunnel.sol";
 import {Ownable} from "../../lib/Ownable.sol";
 
@@ -12,8 +12,6 @@ contract FxMintableERC1155ChildTunnel is FxBaseChildTunnel, Create2, ERC1155Hold
     bytes32 public constant DEPOSIT_BATCH = keccak256("DEPOSIT_BATCH");
     bytes32 public constant WITHDRAW = keccak256("WITHDRAW");
     bytes32 public constant WITHDRAW_BATCH = keccak256("WITHDRAW_BATCH");
-    // bytes32 public constant MAP_TOKEN = keccak256("MAP_TOKEN");
-    // string public constant URI = "FXERC1155URI";
 
     event TokenMapped(address indexed rootToken, address indexed childToken);
     event FxWithdrawERC1155(
@@ -47,9 +45,9 @@ contract FxMintableERC1155ChildTunnel is FxBaseChildTunnel, Create2, ERC1155Hold
     // root to child token
     mapping(address => address) public rootToChildToken;
     // child token template
-    address public childTokenTemplate;
+    address public immutable childTokenTemplate;
     // root token template codehash
-    bytes32 public rootTokenTemplateCodeHash;
+    bytes32 public immutable rootTokenTemplateCodeHash;
 
     constructor(
         address _fxChild,

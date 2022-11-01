@@ -29,7 +29,7 @@ contract FxMintableERC721RootTunnel is FxBaseRootTunnel, Create2, IERC721Receive
     );
 
     mapping(address => address) public rootToChildTokens;
-    address public rootTokenTemplate;
+    address public immutable rootTokenTemplate;
 
     constructor(
         address _checkpointManager,
@@ -119,7 +119,7 @@ contract FxMintableERC721RootTunnel is FxBaseRootTunnel, Create2, IERC721Receive
         // deploy new root token
         bytes32 salt = keccak256(abi.encodePacked(childToken));
         address rootToken = createClone(salt, rootTokenTemplate);
-        FxERC721(rootToken).initialize(address(this), rootToken, name, symbol);
+        FxERC721(rootToken).initialize(address(this), childToken, name, symbol);
 
         // add into mapped tokens
         rootToChildTokens[rootToken] = childToken;

@@ -31,9 +31,9 @@ contract FxMintableERC721ChildTunnel is FxBaseChildTunnel, Create2, IERC721Recei
     ); // root to child token
     mapping(address => address) public rootToChildToken;
     // child token template
-    address public childTokenTemplate;
+    address public immutable childTokenTemplate;
     // root token template codehash
-    bytes32 public rootTokenTemplateCodeHash;
+    bytes32 public immutable rootTokenTemplateCodeHash;
 
     constructor(
         address _fxChild,

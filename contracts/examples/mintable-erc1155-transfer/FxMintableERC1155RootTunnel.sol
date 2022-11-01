@@ -43,7 +43,7 @@ contract FxMintableERC1155RootTunnel is FxBaseRootTunnel, Create2, ERC1155Holder
     );
 
     mapping(address => address) public rootToChildTokens;
-    bytes32 public childTokenTemplateCodeHash;
+    bytes32 public immutable childTokenTemplateCodeHash;
 
     constructor(
         address _checkpointManager,
@@ -57,7 +57,7 @@ contract FxMintableERC1155RootTunnel is FxBaseRootTunnel, Create2, ERC1155Holder
         require(rootToChildTokens[rootToken] == address(0x0), "FxMintableERC1155RootTunnel: ALREADY_MAPPED");
 
         ERC1155 rootTokenContract = ERC1155(rootToken);
-        string memory uri = rootTokenContract.uri(0); //token Id?
+        string memory uri = rootTokenContract.uri(0);
 
         // MAP_TOKEN, encode(rootToken,uri)
         bytes memory message = abi.encode(MAP_TOKEN, abi.encode(rootToken, uri));
