@@ -34,6 +34,9 @@ import { StateSender } from '../../types/StateSender';
 import { StateSender__factory } from '../../types/factories/StateSender__factory';
 import { StateReceiver } from '../../types/StateReceiver';
 import { StateReceiver__factory } from '../../types/factories/StateReceiver__factory';
+import { MockCheckpointManager } from '../../types/MockCheckpointManager';
+import { MockCheckpointManager__factory } from '../../types/factories/MockCheckpointManager__factory';
+
 
 const TOTAL_SUPPLY = expandTo18Decimals(10000);
 
@@ -101,8 +104,8 @@ export async function childFixture([wallet]: Signer[]): Promise<ChildFixture> {
 }
 
 export async function rootFixture([wallet]: Signer[], cFixture: ChildFixture, ): Promise<RootFixture> {
-  const checkpointManager: string = "0x600e7E2B520D51a7FE5e404E73Fb0D98bF2A913E";
-
+  // const checkpointManager: string = "0x600e7E2B520D51a7FE5e404E73Fb0D98bF2A913E";
+  const checkpointManager = (await new MockCheckpointManager__factory(wallet).deploy(overrides)).address
   const { 
     fxChild,
     erc20Token: fxERC20,
